@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Patients</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>📋 All Patients</h1>
+    <p>View registered patient records</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="list.html">All Patients</a>
+    <a href="listOne.html">Search Patient</a>
+    <a href="insert.html">Add Patient</a>
+    <a href="update.html">Update Patient</a>
+    <a href="delete.html">Delete Patient</a>
+</nav>
+<div class="page-banner">
+    <img src="images/patient-records.jpg" alt="Healthcare patient records">
+    <div class="page-banner-text">
+        <h2>Patient Records</h2>
+        <p>View and manage patient information in one place.</p>
+    </div>
+</div>
+<main class="container">
+    <div class="section-heading">
+        <h2>Patient Records</h2>
+        <button onclick="loadPatients()">Refresh List</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="patientTable">
+            <tr>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Problem</th>
+            </tr>
+        </table>
+    </div>
+
+    <p id="message"></p>
+
+    <button class="secondary" onclick="location.href='index.html'">
+        Home Page
+    </button>
+</main>
+
+<footer>
+    <p>Patient Management System</p>
+</footer>
+
+<script>
+loadPatients();
+
+function loadPatients() {
+    const table = document.getElementById("patientTable");
+    const message = document.getElementById("message");
+
+    message.textContent = "Loading patient records...";
+
+    fetch("/patients")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Unable to load patient records");
+            }
+            return response.json();
+        })
+        .then(data => {
+            table.innerHTML = `
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>Problem</th>
+                </tr>
+            `;
+
+            if (data.length === 0) {
+                message.textContent = "No patient records found.";
+                return;
+            }
+
+            data.forEach(patient => {
+                const row = table.insertRow();
+
+                [
+                    patient.patient_id,
+                    patient.patient_name,
+                    patient.email,
+                    patient.phone_no,
+                    patient.gender,
+                    patient.age,
+                    patient.problem
+                ].forEach(value => {
+                    const cell = row.insertCell();
+                    cell.textContent = value ?? "";
+                });
+            });
+
+            message.textContent = data.length + " patient record(s) found.";
+        })
+        .catch(error => {
+            message.textContent = error.message;
+        });
+}
+</script>
+
+</body>
+</html>

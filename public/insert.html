@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Patient</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>➕ Add Patient</h1>
+    <p>Register a new patient</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="list.html">All Patients</a>
+    <a href="listOne.html">Search Patient</a>
+    <a href="insert.html">Add Patient</a>
+    <a href="update.html">Update Patient</a>
+    <a href="delete.html">Delete Patient</a>
+</nav>
+<div class="form-image">
+    <img src="images/add-patient.jpg" alt="Doctor assisting with patient registration">
+    <div>
+        <h2>Register a Patient</h2>
+        <p>Enter the patient's information in the form below.</p>
+    </div>
+</div>
+<main class="container">
+    <div class="form-card">
+        <h2>Patient Information</h2>
+
+        <form id="patientForm">
+            <div class="form-group">
+                <label for="patient_id">Patient ID</label>
+                <input type="text" id="patient_id"
+                       placeholder="Example: P111" required>
+            </div>
+
+            <div class="form-group">
+                <label for="patient_name">Patient Name</label>
+                <input type="text" id="patient_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email">
+            </div>
+
+            <div class="form-group">
+                <label for="phone_no">Phone Number</label>
+                <input type="tel" id="phone_no" maxlength="15">
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" required>
+                    <option value="">-- Select Gender --</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" min="0" max="130">
+            </div>
+
+            <div class="form-group">
+                <label for="problem">Problem</label>
+                <textarea id="problem" rows="3"></textarea>
+            </div>
+
+            <button type="submit">Save Patient</button>
+            <button type="reset" class="secondary">Clear Form</button>
+        </form>
+
+        <p id="message"></p>
+    </div>
+
+    <button class="secondary" onclick="location.href='index.html'">
+        Home Page
+    </button>
+</main>
+
+<footer>
+    <p>Patient Management System</p>
+</footer>
+
+<script>
+document.getElementById("patientForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const patient = {
+        patient_id: document.getElementById("patient_id").value.trim(),
+        patient_name: document.getElementById("patient_name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone_no: document.getElementById("phone_no").value.trim(),
+        gender: document.getElementById("gender").value,
+        age: document.getElementById("age").value,
+        problem: document.getElementById("problem").value.trim()
+    };
+
+    fetch("/patients", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(patient)
+    })
+    .then(async response => {
+        const message = await response.text();
+        if (!response.ok) throw new Error(message);
+        return message;
+    })
+    .then(message => {
+        document.getElementById("message").textContent = message;
+        document.getElementById("patientForm").reset();
+    })
+    .catch(error => {
+        document.getElementById("message").textContent = error.message;
+    });
+});
+</script>
+
+</body>
+</html>

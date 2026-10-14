@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Patient</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>🔍 Search Patient</h1>
+    <p>Find patient information using Patient ID</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="list.html">All Patients</a>
+    <a href="listOne.html">Search Patient</a>
+    <a href="insert.html">Add Patient</a>
+    <a href="update.html">Update Patient</a>
+    <a href="delete.html">Delete Patient</a>
+</nav>
+<div class="page-banner">
+    <img src="images/patient-search.jpg" alt="Healthcare professional reviewing patient information">
+    <div class="page-banner-text">
+        <h2>Find a Patient</h2>
+        <p>Quickly find an individual patient record.</p>
+    </div>
+</div>
+<main class="container">
+    <h2>Find a Patient</h2>
+
+    <div class="form-group">
+        <label for="patient_id">Select Patient ID</label>
+        <select id="patient_id">
+            <option value="">Loading patient IDs...</option>
+        </select>
+    </div>
+
+    <button onclick="searchPatient()">Search</button>
+
+    <div class="table-wrapper">
+        <table id="patientTable">
+            <tr>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Problem</th>
+            </tr>
+        </table>
+    </div>
+
+    <p id="message"></p>
+
+    <button class="secondary" onclick="location.href='index.html'">
+        Home Page
+    </button>
+</main>
+
+<footer>
+    <p>Patient Management System</p>
+</footer>
+
+<script>
+loadPatientIDs();
+
+function loadPatientIDs() {
+    fetch("/patients")
+        .then(response => {
+            if (!response.ok) throw new Error("Unable to load patient IDs");
+            return response.json();
+        })
+        .then(data => {
+            const select = document.getElementById("patient_id");
+            select.innerHTML = '<option value="">-- Select Patient ID --</option>';
+
+            data.forEach(patient => {
+                const option = document.createElement("option");
+                option.value = patient.patient_id;
+                option.textContent = patient.patient_id;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => {
+            document.getElementById("message").textContent = error.message;
+        });
+}
+
+function searchPatient() {
+    const id = document.getElementById("patient_id").value;
+    const table = document.getElementById("patientTable");
+    const message = document.getElementById("message");
+
+    if (!id) {
+        message.textContent = "Please select a patient ID.";
+        return;
+    }
+
+    fetch("/patients/" + encodeURIComponent(id))
+        .then(response => {
+            if (!response.ok) throw new Error("Unable to search patient");
+            return response.json();
+        })
+        .then(data => {
+            table.innerHTML = `
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>Problem</th>
+                </tr>
+            `;
+
+            if (data.length === 0) {
+                message.textContent = "Patient not found.";
+                return;
+            }
+
+            const patient = data[0];
+            const row = table.insertRow();
+
+            [
+                patient.patient_id,
+                patient.patient_name,
+                patient.email,
+                patient.phone_no,
+                patient.gender,
+                patient.age,
+                patient.problem
+            ].forEach(value => {
+                const cell = row.insertCell();
+                cell.textContent = value ?? "";
+            });
+
+            message.textContent = "Patient found successfully.";
+        })
+        .catch(error => {
+            message.textContent = error.message;
+        });
+}
+</script>
+
+</body>
+</html>

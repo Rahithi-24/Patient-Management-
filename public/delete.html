@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Patient</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>🗑️ Delete Patient</h1>
+    <p>Remove a patient record</p>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="list.html">All Patients</a>
+    <a href="listOne.html">Search Patient</a>
+    <a href="insert.html">Add Patient</a>
+    <a href="update.html">Update Patient</a>
+    <a href="delete.html">Delete Patient</a>
+</nav>
+
+<main class="container">
+    <div class="form-card">
+        <h2>Delete Patient Record</h2>
+
+        <div class="form-group">
+            <label for="patient_id">Select Patient ID</label>
+            <select id="patient_id">
+                <option value="">-- Select Patient ID --</option>
+            </select>
+        </div>
+
+        <button class="danger" onclick="deletePatient()">Delete Patient</button>
+
+        <p id="message"></p>
+    </div>
+
+    <button class="secondary" onclick="location.href='index.html'">
+        Home Page
+    </button>
+</main>
+
+<footer>
+    <p>Patient Management System</p>
+</footer>
+
+<script>
+loadPatientIDs();
+
+function loadPatientIDs() {
+    fetch("/patients")
+        .then(response => {
+            if (!response.ok) throw new Error("Unable to load patient IDs");
+            return response.json();
+        })
+        .then(data => {
+            const select = document.getElementById("patient_id");
+
+            data.forEach(patient => {
+                const option = document.createElement("option");
+                option.value = patient.patient_id;
+                option.textContent = patient.patient_id;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => {
+            document.getElementById("message").textContent = error.message;
+        });
+}
+
+function deletePatient() {
+    const id = document.getElementById("patient_id").value;
+    const message = document.getElementById("message");
+
+    if (!id) {
+        message.textContent = "Please select a patient ID.";
+        return;
+    }
+
+    if (!confirm("Are you sure you want to delete patient " + id + "?")) {
+        return;
+    }
+
+    fetch("/patients/" + encodeURIComponent(id), {
+        method: "DELETE"
+    })
+    .then(async response => {
+        const result = await response.text();
+        if (!response.ok) throw new Error(result);
+        return result;
+    })
+    .then(result => {
+        message.textContent = result;
+        document.getElementById("patient_id").value = "";
+
+        const select = document.getElementById("patient_id");
+        select.querySelectorAll("option:not(:first-child)").forEach(option => option.remove());
+        loadPatientIDs();
+    })
+    .catch(error => {
+        message.textContent = error.message;
+    });
+}
+</script>
+
+</body>
+</html>
